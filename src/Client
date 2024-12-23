@@ -1,0 +1,55 @@
+public class Client {
+    private Socket socket ;
+    private BufferedReader bufferedReader;
+    private BUfferedWriter bufferdWriter;
+    private String username;
+
+    public Client(Socket socket, String username) {
+        try {
+            this.socket = socket;
+            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.bufferedReader = new BufferesReader(new InputStreamReader(socket.getInputStream()));
+            this.username = username;
+        }
+        catch (IOException e) {
+            closeEverything(socket, bufferedReader, bufferedWriter);
+        }
+    }
+
+    public void sendMessage() {
+        try {
+            bufferdWriter.write(username);
+            bufferdWriter.newLine();
+            bufferdWriter.flush();
+
+            Scanner scanner = new Scanner(System.in);
+            while (socket.isConnected()) {
+                String messageToSend = scanner.nextLine();
+                bufferdWriter.write(username + ": " + messageToSend);
+                bufferdWriter.newLine();
+                bufferdWriter.flush();
+            }
+        }
+        catch (IOException e) {
+            closeEverything(socket, bufferedReader, bufferdWriter);
+        }
+    }
+
+    public void listendForMessage(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String msgFromGroupChat;
+                
+                while (socket.isConnected()) {
+                    try {
+                        msgFromGroupChat = bufferedReader.readLine();
+                    }
+                    catch (IOException e) {
+                        closeEverything(socket, bufferedReader, bufferdWriter);
+                    }
+                }
+            }
+        }).start();
+    }
+}
