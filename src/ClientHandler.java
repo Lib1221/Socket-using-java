@@ -11,59 +11,53 @@ public class ClientHandler implements Runnable {
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    private String clienUsername;
+    private String clientUsername;
 
-    public ClientHandler(Socket socket){
+    public ClientHandler(Socket socket) {
         try {
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.clienUsername = bufferedReader.readLine();
+            this.clientUsername = bufferedReader.readLine();
             clientHandlers.add(this);
-            broadcastMessage ("SERVER: " + clientHandlers + " has entered the chat!");
-
-
-        }
-        catch(IOException e) {
+            broadcastMessage("SERVER: " + clientUsername + " has entered the chat!");
+        } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
     @Override
     public void run() {
-        // TODO Auto-generated method stub
         String messageFromClient;
 
         while (socket.isConnected()) {
             try {
                 messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;
             }
         }
     }
-    
+
     public void broadcastMessage(String messageToSend) {
-        for(ClientHandler clientHandler : clientHandler) {
+        for (ClientHandler clientHandler : clientHandlers) {
             try {
-                if (!clientHandler.clienUsername.equals(clienUsername)) {
+                if (!clientHandler.clientUsername.equals(clientUsername)) {
                     clientHandler.bufferedWriter.write(messageToSend);
                     clientHandler.bufferedWriter.newLine();
                     clientHandler.bufferedWriter.flush();
                 }
-            }
-            catch(IOException e) {
-                closeEverything(socket, bufferedReader, bufferedWriter);
+            } catch (IOException e) {
+                closeEverything(clientHandler.socket, clientHandler.bufferedReader, clientHandler.bufferedWriter);
             }
         }
     }
 
     public void removeClientHandler() {
         clientHandlers.remove(this);
-        broadcastMessage("SERVER: " + clienUsername + " has left the chat!");
+        broadcastMessage("SERVER: " + clientUsername + " has left the chat!");
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
@@ -78,10 +72,8 @@ public class ClientHandler implements Runnable {
             if (socket != null) {
                 socket.close();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
 }
