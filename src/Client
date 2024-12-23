@@ -52,4 +52,6 @@ public class Client {
             }
         }).start();
     }
+
+    public void closeEverything(Socket socket, ) 
 }
