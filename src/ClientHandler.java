@@ -33,7 +33,12 @@ public class ClientHandler implements Runnable {
         while (socket.isConnected()) {
             try {
                 messageFromClient = bufferedReader.readLine();
-                broadcastMessage(messageFromClient);
+                if (messageFromClient != null) {
+                    broadcastMessage(messageFromClient);
+                } else {
+                    closeEverything(socket, bufferedReader, bufferedWriter);
+                    break;
+                }
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;
